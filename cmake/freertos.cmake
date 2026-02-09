@@ -1,5 +1,5 @@
 # Usage:
-# include(${CMAKE_SOURCE_DIR}/../common/cmake/freertos.cmake)
+# include(${CMAKE_SOURCE_DIR}/../cmake/freertos.cmake)
 
 # Relative path to FreeRTOS-Kernel
 set(FREERTOS_KERNEL_PATH ${CMAKE_CURRENT_LIST_DIR}/../ThirdParty/FreeRTOS-Kernel)

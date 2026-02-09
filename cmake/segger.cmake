@@ -1,7 +1,7 @@
 # SEGGER is a tool to help debug FreeRTOS this file creates function to add FreeRTOS and SEGGER for project
 
 # Usage:
-# include(${CMAKE_SOURCE_DIR}/../common/cmake/segger.cmake)
+# include(${CMAKE_SOURCE_DIR}/../cmake/segger.cmake)
 
 # Including FreeRTOS
 include(freertos.cmake)
