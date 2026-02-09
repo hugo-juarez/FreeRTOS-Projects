@@ -4,7 +4,7 @@
 # include(${CMAKE_SOURCE_DIR}/../cmake/segger.cmake)
 
 # Including FreeRTOS
-include(freertos.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/freertos.cmake)
 
 # Relative path to SEGGER lib
 set(SEGGER_PATH ${CMAKE_CURRENT_LIST_DIR}/../ThirdParty/SEGGER)
@@ -17,9 +17,9 @@ function (add_freertos_segger_library TARGET_NAME CONFIG_DIR)
 
     # Include FreeRTOSConfig.h
     target_include_directories(freertos_config INTERFACE
-        ${CMAKE_CURRENT_SOURCE_DIR}/SEGGER/Config
-        ${CMAKE_CURRENT_SOURCE_DIR}/SEGGER/OS
-        ${CMAKE_CURRENT_SOURCE_DIR}/SEGGER/SEGGER
+        ${SEGGER_PATH}/Config
+        ${SEGGER_PATH}/OS
+        ${SEGGER_PATH}/SEGGER
         ${CONFIG_DIR} # Where your FreeRTOSConfig.h lives
     )
 
@@ -51,5 +51,18 @@ function (add_freertos_segger_library TARGET_NAME CONFIG_DIR)
             $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-covered-switch-default>
             $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-cast-align> )
 
+
+    # Linking libraries to target
+    target_link_libraries(${TARGET_NAME}
+        freertos_kernel
+        freertos_config
+        segger_sysview_freertos
+        segger_rtt_syscalls
+    )
+
+    message(STATUS "FreeRTOS and SEGGER library '${TARGET_NAME}' configured:")
+    message(STATUS "  - Port: ${FREERTOS_PORT}")
+    message(STATUS "  - Heap: ${FREERTOS_HEAP}")
+    message(STATUS "  - Config: ${CONFIG_DIR}")
 
 endfunction()
