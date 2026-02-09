@@ -66,3 +66,8 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
 
     # Add user defined libraries
 )
+
+# Adding FreeRTOS
+include(${CMAKE_SOURCE_DIR}/../cmake/freertos.cmake)
+
+add_freertos_library(${CMAKE_PROJECT_NAME} ${CMAKE_SOURCE_DIR}/Core/Inc)
