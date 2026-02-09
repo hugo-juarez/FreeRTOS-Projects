@@ -1,0 +1,68 @@
+# CLion / JetBrains IDE
+.idea/
+*.iml
+cmake-build-*/
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+compile_commands.json
+
+# Build directories
+build/
+build-cubeide/
+out/
+bin/
+obj/
+
+# STM32 build artifacts
+*.o
+*.d
+*.elf
+*.hex
+*.bin
+*.map
+*.list
+*.lss
+*.sym
+
+# Debug files
+*.dSYM/
+*.su
+*.gcno
+*.gcda
+
+# Backup files
+*~
+*.bak
+*.swp
+*.swo
+
+# VS Code
+.vscode/
+
+# clangd
+.cache/
+
+# Eclipse / STM32CubeIDE
+*.cbp
+*.cproject
+*.project
+.settings/
+
+# Additional build directories
+Debug/
+Release/
+
+# Debug session files
+*.jlink
+*.cfg
+
+# Core dumps
+core
+
+# OS files
+.DS_Store
+Thumbs.db

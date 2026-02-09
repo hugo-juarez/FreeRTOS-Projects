@@ -1,0 +1,9 @@
+# Exclude third-party and auto-generated code from GitHub language stats
+
+# ThirdParty
+ThirdParty/** linguist-vendored
+
+# STM32CubeMX generated code
+*/Drivers/** linguist-vendored
+*/Middlewares/** linguist-vendored
+*/USB_HOST/** linguist-vendored
