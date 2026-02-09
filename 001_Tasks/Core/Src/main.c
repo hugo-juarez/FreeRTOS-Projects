@@ -86,12 +86,15 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+  DWT->CTRL |= ( 1 << 0);
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
+
+  SEGGER_SYSVIEW_Conf();
+  SEGGER_SYSVIEW_Start();
 
   status = xTaskCreate(task1_handler, "Task1", 200, "Hello world from Task-1", 2, &task1_handle);
   configASSERT(status == pdPASS);
