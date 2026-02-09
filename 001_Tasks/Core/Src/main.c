@@ -212,18 +212,24 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 static void task1_handler(void* params)
 {
+  char msg[100];
+
   while (1)
   {
-    printf("%s\n", (char *)params);
+    snprintf(msg, 100, "%s\n", (char *)params);
+    SEGGER_SYSVIEW_PrintfTarget(msg);
     taskYIELD();
   }
 }
 
 static void task2_handler(void* params)
 {
+  char msg[100];
+
   while (1)
   {
-    printf("%s\n", (char *)params);
+    snprintf(msg, 100, "%s\n", (char *)params);
+    SEGGER_SYSVIEW_PrintfTarget(msg);
     taskYIELD();
   }
 }
