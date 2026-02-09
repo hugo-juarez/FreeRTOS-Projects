@@ -51,6 +51,7 @@ obj/
 *.cproject
 *.project
 .settings/
+.mxproject/
 
 # Additional build directories
 Debug/
