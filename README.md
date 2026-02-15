@@ -182,6 +182,54 @@ SEGGER_SYSVIEW_PrintfTarget("Hello from Task-1");
 
 If you need SWO output instead, remove `segger_rtt_syscalls` from the link libraries in `cmake/segger.cmake` and remove the corresponding calls.
 
+## SEGGER UART Recording (Real-Time Streaming via UART)
+
+Instead of single-shot recording, you can stream SystemView data over UART in real time. This uses USART2 (PA2/TX, PA3/RX) to communicate with SEGGER SystemView on the host.
+
+[!NOTE]
+The current SEGGER files only support STM32F407xx if wanting to make it available for your project modify `ThirdParty/SEGGER/Rec/segger_uart.c` to match devices specs.
+
+### CMake Setup
+
+Add the following **before** the `include(segger.cmake)` line in your project's `CMakeLists.txt`:
+
+```cmake
+# Enable SEGGER UART recording
+set(SEGGER_UART_REC 1)
+
+# Adding FreeRTOS and SEGGER (must come after)
+include(${CMAKE_SOURCE_DIR}/../cmake/segger.cmake)
+add_freertos_segger_library(${CMAKE_PROJECT_NAME} ${CMAKE_SOURCE_DIR}/Core/Inc)
+```
+
+### main.c Changes
+
+1. Declare the UART init function:
+
+```c
+extern void SEGGER_UART_init(U32 baud);
+```
+
+2. Call `SEGGER_UART_init()` **before** `SEGGER_SYSVIEW_Conf()`, and remove `SEGGER_SYSVIEW_Start()` (SystemView will start automatically when the host connects):
+
+```c
+SEGGER_UART_init(500000);
+SEGGER_SYSVIEW_Conf();
+// Do NOT call SEGGER_SYSVIEW_Start() — the host triggers recording
+```
+
+### Host Connection
+
+1. Connect a USB-to-UART adapter to PA2 (TX) and PA3 (RX) on the STM32F407
+2. In SEGGER SystemView: **Target > Recorder Configuration > UART** and set the baud rate to match (e.g. 500000)
+3. Click **Start Recording** — SystemView sends the hello message and recording begins automatically
+
+### Notes
+
+- The UART interrupt runs at priority 6, which is below `configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY` (5), so it does not interfere with FreeRTOS
+- This is STM32F407-specific (USART2 on APB1 at 42 MHz). For other MCUs, modify `ThirdParty/SEGGER/Rec/segger_uart.c`
+- Single-shot recording and UART recording are mutually exclusive — use one or the other
+
 ## Resources
 
 - [FreeRTOS Documentation](https://www.freertos.org/)
