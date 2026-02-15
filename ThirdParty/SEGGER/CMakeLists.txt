@@ -27,6 +27,16 @@ add_library(segger_rtt_syscalls STATIC
 target_link_libraries(segger_rtt_syscalls PUBLIC segger_rtt)
 
 # ============================================================================
+# SEGGER UART (optional - for logging through UART)
+# ============================================================================
+add_library(segger_uart STATIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/Rec/segger_uart.c
+)
+
+target_link_libraries(segger_uart PUBLIC segger_rtt)
+
+
+# ============================================================================
 # SEGGER SystemView Library (includes RTT + SystemView core)
 # ============================================================================
 add_library(segger_sysview STATIC
