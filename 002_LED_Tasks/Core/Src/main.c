@@ -99,6 +99,14 @@ int main(void)
 
   status = xTaskCreate(led_green_handler, "LED_green_task", 200, NULL, 2, &task1_handle);
   configASSERT(status == pdPASS);
+
+  status = xTaskCreate(led_orange_handler, "LED_orange_task", 200, NULL, 2, &task2_handle);
+  configASSERT(status == pdPASS);
+
+  status = xTaskCreate(led_red_handler, "LED_red_task", 200, NULL, 2, &task3_handle);
+  configASSERT(status == pdPASS);
+
+  vTaskStartScheduler();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -106,6 +114,8 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+
+    // This part of the code will never be reached since TaskScheduler worked !!!!
 
     /* USER CODE BEGIN 3 */
   }
