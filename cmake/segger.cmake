@@ -60,6 +60,17 @@ function (add_freertos_segger_library TARGET_NAME CONFIG_DIR)
         segger_rtt_syscalls
     )
 
+    # If set to use UART
+    if(SEGGER_UART_REC EQUAL 1)
+        message(STATUS "SEGGER UART enabled.")
+        target_link_libraries(segger_uart PUBLIC stm32cubemx)
+        target_compile_definitions(segger_uart PUBLIC SEGGER_UART_REC=1)
+        # segger_sysview needs SEGGER_UART_REC to enable SEGGER_SYSVIEW_ON_EVENT_RECORDED
+        target_compile_definitions(segger_sysview PUBLIC SEGGER_UART_REC=1)
+
+        target_link_libraries(${TARGET_NAME} segger_uart)
+    endif()
+
     message(STATUS "FreeRTOS and SEGGER library '${TARGET_NAME}' configured:")
     message(STATUS "  - Port: ${FREERTOS_PORT}")
     message(STATUS "  - Heap: ${FREERTOS_HEAP}")
