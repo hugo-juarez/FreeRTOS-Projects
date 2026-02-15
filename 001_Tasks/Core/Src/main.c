@@ -53,6 +53,7 @@ static void MX_GPIO_Init(void);
 /* USER CODE BEGIN PFP */
 static void task1_handler(void* params);
 static void task2_handler(void* params);
+extern void SEGGER_UART_init(U32 baud);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -93,8 +94,9 @@ int main(void)
   MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
 
+  SEGGER_UART_init(500000);
   SEGGER_SYSVIEW_Conf();
-  SEGGER_SYSVIEW_Start();
+  //SEGGER_SYSVIEW_Start();
 
   status = xTaskCreate(task1_handler, "Task1", 200, "Hello world from Task-1", 2, &task1_handle);
   configASSERT(status == pdPASS);

@@ -67,6 +67,9 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
     # Add user defined libraries
 )
 
+# Enable SEGGER UART loggin
+set(SEGGER_UART_REC 1)
+
 # Adding FreeRTOS and SEGGER
 include(${CMAKE_SOURCE_DIR}/../cmake/segger.cmake)
 
