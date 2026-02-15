@@ -12,7 +12,7 @@ Project for FreeRTOS on the STM32F407G-DISC1 board with SEGGER SystemView integr
 ## Installation
 
 ```bash
-git clone <repo-url>
+git clone git@github.com:hugo-juarez/FreeRTOS-Projects.git
 cd FreeRTOS
 git submodule update --init --recursive
 ```
@@ -186,8 +186,8 @@ If you need SWO output instead, remove `segger_rtt_syscalls` from the link libra
 
 Instead of single-shot recording, you can stream SystemView data over UART in real time. This uses USART2 (PA2/TX, PA3/RX) to communicate with SEGGER SystemView on the host.
 
-[!NOTE]
-The current SEGGER files only support STM32F407xx if wanting to make it available for your project modify `ThirdParty/SEGGER/Rec/segger_uart.c` to match devices specs.
+> [!NOTE]
+> The current SEGGER files only support STM32F407xx if wanting to make it available for your project modify `ThirdParty/SEGGER/Rec/segger_uart.c` to match devices specs.
 
 ### CMake Setup
 
