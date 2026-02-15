@@ -39,6 +39,7 @@ obj/
 *.bak
 *.swp
 *.swo
+*.mxproject
 
 # VS Code
 .vscode/
