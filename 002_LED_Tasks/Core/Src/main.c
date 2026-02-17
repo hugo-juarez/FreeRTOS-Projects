@@ -313,34 +313,40 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 static void led_green_handler(void* params)
 {
+  TickType_t xLastWakeTime = xTaskGetTickCount();
+  const TickType_t xFrequency = 1000 / portTICK_PERIOD_MS;
 
   while (1)
   {
     SEGGER_SYSVIEW_PrintfTarget("Toggle GREEN pin");
     HAL_GPIO_TogglePin(GPIOD, LED_GREEN_PIN);
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    vTaskDelayUntil(&xLastWakeTime, xFrequency);
   }
 }
 
 static void led_orange_handler(void* params)
 {
+  TickType_t xLastWakeTime = xTaskGetTickCount();
+  const TickType_t xFrequency = 800 / portTICK_PERIOD_MS;
 
   while (1)
   {
     SEGGER_SYSVIEW_PrintfTarget("Toggle ORANGE pin");
     HAL_GPIO_TogglePin(GPIOD, LED_ORANGE_PIN);
-    vTaskDelay(pdMS_TO_TICKS(800));
+    vTaskDelayUntil(&xLastWakeTime, xFrequency);
   }
 }
 
 static void led_red_handler(void* params)
 {
+  TickType_t xLastWakeTime = xTaskGetTickCount();
+  const TickType_t xFrequency = 400 / portTICK_PERIOD_MS;
 
   while (1)
   {
     SEGGER_SYSVIEW_PrintfTarget("Toggle RED pin");
     HAL_GPIO_TogglePin(GPIOD, LED_RED_PIN);
-    vTaskDelay(pdMS_TO_TICKS(400));
+    vTaskDelayUntil(&xLastWakeTime, xFrequency);
   }
 }
 /* USER CODE END 4 */
