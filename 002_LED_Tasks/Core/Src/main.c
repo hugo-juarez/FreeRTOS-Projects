@@ -115,8 +115,6 @@ int main(void)
   {
     /* USER CODE END WHILE */
 
-    // This part of the code will never be reached since TaskScheduler worked !!!!
-
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
