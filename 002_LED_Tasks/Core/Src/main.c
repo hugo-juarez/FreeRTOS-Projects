@@ -88,13 +88,14 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-  DWT->CTRL |= ( 1 << 0);
+
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
-  SEGGER_UART_init(500000);
+  SEGGER_UART_init(250000);
+  DWT->CTRL |= ( 1 << 0);
   SEGGER_SYSVIEW_Conf();
 
   status = xTaskCreate(led_green_handler, "LED_green_task", 200, NULL, 2, &task1_handle);
@@ -310,19 +311,37 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void led_green_handler(void* params)
+static void led_green_handler(void* params)
 {
 
+  while (1)
+  {
+    SEGGER_SYSVIEW_PrintfTarget("Toggle GREEN pin");
+    HAL_GPIO_TogglePin(GPIOD, LED_GREEN_PIN);
+    vTaskDelay(pdMS_TO_TICKS(1000));
+  }
 }
 
-void led_orange_handler(void* params)
+static void led_orange_handler(void* params)
 {
 
+  while (1)
+  {
+    SEGGER_SYSVIEW_PrintfTarget("Toggle ORANGE pin");
+    HAL_GPIO_TogglePin(GPIOD, LED_ORANGE_PIN);
+    vTaskDelay(pdMS_TO_TICKS(800));
+  }
 }
 
-void led_red_handler(void* params)
+static void led_red_handler(void* params)
 {
 
+  while (1)
+  {
+    SEGGER_SYSVIEW_PrintfTarget("Toggle RED pin");
+    HAL_GPIO_TogglePin(GPIOD, LED_RED_PIN);
+    vTaskDelay(pdMS_TO_TICKS(400));
+  }
 }
 /* USER CODE END 4 */
 
