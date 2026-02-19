@@ -382,7 +382,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
   {
     traceISR_ENTER();
     BaseType_t pxHighPriority;
-    xTaskNotifyFromISR(next_task_handle, 0, eNoAction, NULL);
+    xTaskNotifyFromISR(next_task_handle, 0, eNoAction, &pxHighPriority);
+    portYIELD_FROM_ISR(pxHighPriority);
     traceISR_EXIT();
   }
 }
