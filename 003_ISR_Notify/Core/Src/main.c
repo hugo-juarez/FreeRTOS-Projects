@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include "FreeRTOS.h"
 #include "task.h"
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -49,6 +50,7 @@
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void toggle_led_task_handler(void* params);
 extern void SEGGER_UART_init(U32);
 /* USER CODE BEGIN PFP */
 
@@ -56,7 +58,12 @@ extern void SEGGER_UART_init(U32);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+typedef struct
+{
+  char name[20];
+  uint16_t pin;
+  TickType_t frequency;
+} Led_t;
 /* USER CODE END 0 */
 
 /**
@@ -67,7 +74,10 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+  TaskHandle_t green_led;
+  TaskHandle_t orange_led;
+  TaskHandle_t red_led;
+  BaseType_t status = pdFALSE;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -93,7 +103,35 @@ int main(void)
   DWT->CTRL |= ( 1 << 0);
   SEGGER_SYSVIEW_Conf();
 
+  static Led_t green_pin = {
+    .name = "Toggle GREEN led",
+    .pin = LD4_Pin,
+    .frequency = 1000 / portTICK_PERIOD_MS
+  };
+  status = xTaskCreate(toggle_led_task_handler, "GREEN LED", 120, &green_pin, 2, &green_led);
+  configASSERT( status == pdPASS );
 
+  static Led_t orange_pin = {
+    .name = "Toggle ORANGE led",
+    .pin = LD3_Pin,
+    .frequency = 800 / portTICK_PERIOD_MS
+  };
+  status = xTaskCreate(toggle_led_task_handler, "ORANGE LED", 120, &orange_pin, 2, &orange_led);
+  configASSERT( status == pdPASS );
+
+  static Led_t red_pin = {
+    .name = "Toggle RED led",
+    .pin = LD5_Pin,
+    .frequency = 400 / portTICK_PERIOD_MS
+  };
+  status = xTaskCreate(toggle_led_task_handler, "RED LED", 120, &red_pin, 2, &red_led);
+  configASSERT( status == pdPASS );
+
+  vTaskStartScheduler();
+
+  /*
+   * Code will never reach here!!
+   */
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -301,7 +339,18 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+static void toggle_led_task_handler(void* params)
+{
+  Led_t *pin = params;
+  BaseType_t status;
 
+  while (1)
+  {
+    SEGGER_SYSVIEW_PrintfTarget(pin->name);
+    HAL_GPIO_TogglePin(GPIOD, pin->pin);
+    vTaskDelay(pin->frequency);
+  }
+}
 /* USER CODE END 4 */
 
 /**
