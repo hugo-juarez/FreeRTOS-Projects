@@ -50,10 +50,9 @@
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+/* USER CODE BEGIN PFP */
 static void toggle_led_task_handler(void* params);
 extern void SEGGER_UART_init(U32);
-/* USER CODE BEGIN PFP */
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -64,6 +63,12 @@ typedef struct
   uint16_t pin;
   TickType_t frequency;
 } Led_t;
+
+TaskHandle_t green_led;
+TaskHandle_t orange_led;
+TaskHandle_t red_led;
+
+TaskHandle_t next_task_handle = NULL;
 /* USER CODE END 0 */
 
 /**
@@ -74,9 +79,6 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-  TaskHandle_t green_led;
-  TaskHandle_t orange_led;
-  TaskHandle_t red_led;
   BaseType_t status = pdFALSE;
   /* USER CODE END 1 */
 
@@ -110,6 +112,8 @@ int main(void)
   };
   status = xTaskCreate(toggle_led_task_handler, "GREEN LED", 120, &green_pin, 2, &green_led);
   configASSERT( status == pdPASS );
+
+  next_task_handle = green_led;
 
   static Led_t orange_pin = {
     .name = "Toggle ORANGE led",
@@ -348,7 +352,38 @@ static void toggle_led_task_handler(void* params)
   {
     SEGGER_SYSVIEW_PrintfTarget(pin->name);
     HAL_GPIO_TogglePin(GPIOD, pin->pin);
-    vTaskDelay(pin->frequency);
+    status = xTaskNotifyWait(0, 0, NULL, pin->frequency);
+    if (status != pdTRUE) continue;
+
+    portENTER_CRITICAL();
+    switch (pin->pin)
+    {
+    case LD4_Pin:
+      next_task_handle = orange_led;
+      break;
+    case LD3_Pin:
+      next_task_handle = red_led;
+      break;
+    default:
+      next_task_handle = NULL;
+      break;
+    }
+    HAL_GPIO_WritePin(GPIOD, pin->pin, GPIO_PIN_SET);
+    SEGGER_SYSVIEW_PrintfTarget("Deleted task %s", pin->name);
+    portEXIT_CRITICAL();
+    vTaskDelete(NULL);
+
+  }
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+  if (GPIO_Pin == GPIO_PIN_0)
+  {
+    traceISR_ENTER();
+    BaseType_t pxHighPriority;
+    xTaskNotifyFromISR(next_task_handle, 0, eNoAction, NULL);
+    traceISR_EXIT();
   }
 }
 /* USER CODE END 4 */
