@@ -349,6 +349,11 @@ static void led_red_handler(void* params)
     vTaskDelayUntil(&xLastWakeTime, xFrequency);
   }
 }
+
+void vApplicationIdleHook(void)
+{
+  HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+}
 /* USER CODE END 4 */
 
 /**
