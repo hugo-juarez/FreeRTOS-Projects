@@ -9,6 +9,24 @@
 #include "task.h"
 #include "queue.h"
 
+// Enums
+typedef enum
+{
+    State_MainMenu = 0,
+    State_LedEffect,
+    State_RtcMenu,
+    State_RtcTimeConfig,
+    State_RtcDateConfig,
+    State_RtcReport,
+} State_t;
+
+// Structs
+typedef struct
+{
+    uint8_t payload[10];
+    uint8_t len;
+} Command_t;
+
 // Task handler Getters
 TaskHandle_t* get_menu_task(void);
 TaskHandle_t* get_led_task(void);
