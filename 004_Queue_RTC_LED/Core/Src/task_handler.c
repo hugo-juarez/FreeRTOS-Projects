@@ -67,9 +67,11 @@ void menu_handler(void* params)
             {
             case 0:
                 curr_state = State_LedEffect;
+                xTaskNotify(led_task, 0, eNoAction);
                 break;
             case 1:
                 curr_state = State_RtcMenu;
+                xTaskNotify(rtc_task, 0, eNoAction);
                 break;
             case 2:
                 break;
