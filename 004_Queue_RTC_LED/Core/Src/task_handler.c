@@ -10,6 +10,7 @@ static void parse_command(void);
 // Private global variables
 static State_t curr_state = State_MainMenu;
 static Command_t command;
+static const char* invalid_option = "////Invalid option////\n";
 
 // Defining task handlers
 static TaskHandle_t menu_task;
@@ -45,8 +46,43 @@ QueueHandle_t get_input_data_queue(void) { return input_data_queue; }
 // Task Handlers
 void menu_handler(void* params)
 {
+    uint8_t option = 2;
+    const char* msg_menu = "\n========================\n"
+                            "|         Menu         |\n"
+                            "========================\n"
+                                "LED effect    ----> 0\n"
+                                "Date and time ----> 1\n"
+                                "Exit          ----> 2\n"
+                                "Enter your choice here : ";
+
     while(1)
     {
+        xQueueSendToBack(print_queue, &msg_menu, portMAX_DELAY);
+        xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
+
+        if (command.len == 1)
+        {
+            option = command.payload[0] - 48;
+            switch (option)
+            {
+            case 0:
+                curr_state = State_LedEffect;
+                break;
+            case 1:
+                curr_state = State_RtcMenu;
+                break;
+            case 2:
+                break;
+            default:
+                xQueueSendToBack(print_queue, &invalid_option, portMAX_DELAY);
+                break;
+            }
+        } else
+        {
+            xQueueSendToBack(print_queue, &invalid_option, portMAX_DELAY);
+        }
+
+        xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
     }
 }
 
@@ -71,7 +107,7 @@ void command_handler(void* params)
     {
         if ( xTaskNotifyWait(0, 0, NULL, portMAX_DELAY) != pdTRUE) continue;
 
-        if ( xQueueReceive(input_data_queue, command.payload, 0) != pdPASS) continue;
+        if ( xQueueReceive(input_data_queue, &command.payload, 0) != pdPASS) continue;
 
         parse_command();
 
