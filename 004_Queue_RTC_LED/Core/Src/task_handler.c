@@ -21,24 +21,34 @@ TaskHandle_t* get_print_task(void) { return &print_task; }
 // Handlers
 void menu_handler(void* params)
 {
-
+    while(1)
+    {
+    }
 }
 
 void led_handler(void* params)
 {
-
+    while(1)
+    {
+    }
 }
 
 void rtc_handler(void* params)
 {
-
+    while(1)
+    {
+    }
 }
 
 void command_handler(void* params)
 {
-
+    while(1)
+    {
+    }
 }
 void print_handler(void* params)
 {
-
+    while(1)
+    {
+    }
 }
