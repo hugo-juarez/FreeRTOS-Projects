@@ -5,6 +5,7 @@
 #include "task_handler.h"
 #include <string.h>
 #include "led_effect.h"
+#include "main.h"
 
 // Private Helper functions defines
 static void parse_command(void);
@@ -13,6 +14,7 @@ static void parse_command(void);
 static State_t curr_state = State_MainMenu;
 static Command_t command;
 static const char* invalid_option = "////Invalid option////\n";
+extern UART_HandleTypeDef huart2;
 
 // Defining task handlers
 static TaskHandle_t menu_task;
@@ -176,8 +178,11 @@ void command_handler(void* params)
 }
 void print_handler(void* params)
 {
+    uint32_t *msg;
     while(1)
     {
+        xQueueReceive(print_queue, &msg, portMAX_DELAY);
+        HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen((char *)msg), portMAX_DELAY);
     }
 }
 
