@@ -32,6 +32,9 @@ void init_queues(void)
     configASSERT(input_data_queue != NULL);
 }
 
+QueueHandle_t get_print_queue(void) { return print_queue; }
+QueueHandle_t get_input_data_queue(void) { return input_data_queue; }
+
 // Handlers
 void menu_handler(void* params)
 {

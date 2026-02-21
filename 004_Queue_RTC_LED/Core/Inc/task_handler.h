@@ -25,5 +25,7 @@ void print_handler(void* params);
 
 // Queue APIs
 void init_queues(void);
+QueueHandle_t get_print_queue(void);
+QueueHandle_t get_input_data_queue(void);
 
 #endif //INC_004_QUEUE_RTC_LED_TASK_HANDLER_H
