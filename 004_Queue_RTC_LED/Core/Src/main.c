@@ -21,7 +21,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "FreeRTOS.h"
+#include "task.h"
+#include "task_handler.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -67,7 +69,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+  BaseType_t status;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -90,7 +92,22 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+  status = xTaskCreate(menu_handler, "menu_handler", 200, NULL, 2, get_menu_task());
+  configASSERT(status == pdPASS);
 
+  status = xTaskCreate(led_handler, "led_handler", 200, NULL, 2, get_led_task());
+  configASSERT(status == pdPASS);
+
+  status = xTaskCreate(rtc_handler, "rtc_handler", 200, NULL, 2, get_rtc_task());
+  configASSERT(status == pdPASS);
+
+  status = xTaskCreate(command_handler, "command_handler", 200, NULL, 2, get_command_task());
+  configASSERT(status == pdPASS);
+
+  status = xTaskCreate(print_handler, "print_handler", 200, NULL, 2, get_print_task());
+  configASSERT(status == pdPASS);
+
+  vTaskStartScheduler();
   /* USER CODE END 2 */
 
   /* Infinite loop */
