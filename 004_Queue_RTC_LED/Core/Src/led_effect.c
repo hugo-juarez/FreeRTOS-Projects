@@ -17,7 +17,7 @@ void led_init_timer(void)
 
 void led_effect_stop(void)
 {
-    led_effect_id = -1;
+    xTimerStop(led_timer_handle, portMAX_DELAY);
 }
 
 void set_led_effect(uint8_t effect)
