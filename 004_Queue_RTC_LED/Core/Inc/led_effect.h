@@ -12,7 +12,7 @@
 // LED APIs
 void led_init_timer(void);
 void led_effect_stop(void);
-void led_effect(uint8_t effect);
+void set_led_effect(uint8_t effect);
 
 // LED Timer Callback
 void led_effect_callback(TimerHandle_t xTimer);

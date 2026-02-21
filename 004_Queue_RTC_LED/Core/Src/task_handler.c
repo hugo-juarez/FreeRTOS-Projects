@@ -4,6 +4,7 @@
 
 #include "task_handler.h"
 #include <string.h>
+#include "led_effect.h"
 
 // Private Helper functions defines
 static void parse_command(void);
@@ -111,16 +112,16 @@ void led_handler(void* params)
                 led_effect_stop();
             } else if (!strcmp((char *)command.payload, "e1"))
             {
-                led_effect(1);
+                set_led_effect(1);
             } else if (!strcmp((char *)command.payload, "e2"))
             {
-                led_effect(2);
+                set_led_effect(2);
             } else if (!strcmp((char *)command.payload, "e3"))
             {
-                led_effect(3);
+                set_led_effect(3);
             } else if (!strcmp((char *)command.payload, "e4"))
             {
-                led_effect(4);
+                set_led_effect(4);
             } else
             {
                 xQueueSendToBack(print_queue, &invalid_option, portMAX_DELAY);

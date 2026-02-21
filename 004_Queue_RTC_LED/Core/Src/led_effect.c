@@ -17,12 +17,12 @@ void led_init_timer(void)
 
 void led_effect_stop(void)
 {
-
+    led_effect_id = -1;
 }
 
-void led_effect(uint8_t effect)
+void set_led_effect(uint8_t effect)
 {
-
+    led_effect_id = effect;
 }
 
 // LED Timer Callback
