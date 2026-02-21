@@ -18,6 +18,20 @@ TaskHandle_t* get_rtc_task(void) { return &rtc_task; }
 TaskHandle_t* get_command_task(void) { return &command_task; }
 TaskHandle_t* get_print_task(void) { return &print_task; }
 
+// Queue Created on Main
+static QueueHandle_t print_queue;
+static QueueHandle_t input_data_queue;
+
+// Queue API
+void init_queues(void)
+{
+    print_queue = xQueueCreate(10, sizeof(char));
+    configASSERT(print_queue != NULL);
+
+    input_data_queue = xQueueCreate(10, sizeof(char));
+    configASSERT(input_data_queue != NULL);
+}
+
 // Handlers
 void menu_handler(void* params)
 {

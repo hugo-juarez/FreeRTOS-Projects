@@ -111,6 +111,8 @@ int main(void)
   status = xTaskCreate(print_handler, "print_handler", 200, NULL, 2, get_print_task());
   configASSERT(status == pdPASS);
 
+  init_queues();
+
   vTaskStartScheduler();
   /* USER CODE END 2 */
 
