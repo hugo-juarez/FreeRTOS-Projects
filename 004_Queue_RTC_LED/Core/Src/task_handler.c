@@ -4,6 +4,13 @@
 
 #include "task_handler.h"
 
+// Private Helper functions defines
+static void parse_command(void);
+
+// Private global variables
+static State_t curr_state;
+static Command_t command;
+
 // Defining task handlers
 static TaskHandle_t menu_task;
 static TaskHandle_t led_task;
@@ -35,7 +42,7 @@ void init_queues(void)
 QueueHandle_t get_print_queue(void) { return print_queue; }
 QueueHandle_t get_input_data_queue(void) { return input_data_queue; }
 
-// Handlers
+// Task Handlers
 void menu_handler(void* params)
 {
     while(1)
@@ -59,8 +66,32 @@ void rtc_handler(void* params)
 
 void command_handler(void* params)
 {
+
     while(1)
     {
+        if ( xTaskNotifyWait(0, 0, NULL, portMAX_DELAY) != pdTRUE) continue;
+
+        if ( xQueueReceive(input_data_queue, command.payload, 0) != pdPASS) continue;
+
+        parse_command();
+
+        switch (curr_state)
+        {
+        case State_MainMenu:
+            xTaskNotify(menu_task, 0, eNoAction);
+            break;
+        case State_LedEffect:
+            xTaskNotify(led_task, 0, eNoAction);
+            break;
+        case State_RtcMenu:
+        case State_RtcTimeConfig:
+        case State_RtcDateConfig:
+        case State_RtcReport:
+            xTaskNotify(rtc_task, 0, eNoAction);
+            break;
+        default:
+            break;
+        }
     }
 }
 void print_handler(void* params)
@@ -68,4 +99,22 @@ void print_handler(void* params)
     while(1)
     {
     }
+}
+
+// Private Helper functions
+
+static void parse_command(void)
+{
+    int i;
+    for (i = 0; i < 10; i ++)
+    {
+
+        if ( command.payload[i] == '\n')
+        {
+            break;
+        }
+    }
+
+    command.len = --i;
+    command.payload[i] = '\0';
 }
