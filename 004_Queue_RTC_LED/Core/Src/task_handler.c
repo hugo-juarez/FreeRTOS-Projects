@@ -3,6 +3,7 @@
 //
 
 #include "task_handler.h"
+#include <string.h>
 
 // Private Helper functions defines
 static void parse_command(void);
@@ -90,8 +91,48 @@ void menu_handler(void* params)
 
 void led_handler(void* params)
 {
+    const char* msg_led = "========================\n"
+                          "|      LED Effect     |\n"
+                          "========================\n"
+                          "(none,e1,e2,e3,e4)\n"
+                          "Enter your choice here : ";
     while(1)
     {
+        xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
+
+        xQueueSendToBack(print_queue, &msg_led, portMAX_DELAY);
+
+        xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
+
+        if (command.len <= 4)
+        {
+            if (!strcmp((char *)command.payload, "none"))
+            {
+                led_effect_stop();
+            } else if (!strcmp((char *)command.payload, "e1"))
+            {
+                led_effect(1);
+            } else if (!strcmp((char *)command.payload, "e2"))
+            {
+                led_effect(2);
+            } else if (!strcmp((char *)command.payload, "e3"))
+            {
+                led_effect(3);
+            } else if (!strcmp((char *)command.payload, "e4"))
+            {
+                led_effect(4);
+            } else
+            {
+                xQueueSendToBack(print_queue, &invalid_option, portMAX_DELAY);
+            }
+        } else
+        {
+            xQueueSendToBack(print_queue, &invalid_option, portMAX_DELAY);
+        }
+
+        curr_state = State_MainMenu;
+
+        xTaskNotify(menu_task, 0, eNoAction);
     }
 }
 
