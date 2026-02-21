@@ -8,7 +8,7 @@
 static void parse_command(void);
 
 // Private global variables
-static State_t curr_state;
+static State_t curr_state = State_MainMenu;
 static Command_t command;
 
 // Defining task handlers
