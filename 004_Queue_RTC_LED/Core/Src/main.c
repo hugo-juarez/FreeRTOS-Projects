@@ -47,7 +47,7 @@ RTC_HandleTypeDef hrtc;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-
+uint8_t user_data;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -112,6 +112,9 @@ int main(void)
   configASSERT(status == pdPASS);
 
   init_queues();
+
+  // Start data reception
+  HAL_UART_Receive_IT(&huart2, (uint8_t*)&user_data, 1);
 
   vTaskStartScheduler();
   /* USER CODE END 2 */
@@ -415,7 +418,35 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+  BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+  QueueHandle_t queue = get_input_data_queue();
 
+  BaseType_t status = xQueueIsQueueFullFromISR(queue);
+
+  if (status == pdFALSE)
+  {
+    // Queue is not full
+    xQueueSendToBackFromISR(queue, &user_data, NULL);
+  } else if (user_data == '\n')
+  {
+    // Queue is full but last bit received was the end
+    xQueueOverwriteFromISR(queue, &user_data, NULL);
+  }
+
+  if (user_data == '\n')
+  {
+
+    TaskHandle_t command_handle = *get_command_task();
+
+    xTaskNotifyFromISR(command_handle, 0, eNoAction, &xHigherPriorityTaskWoken);
+  }
+
+  HAL_UART_Receive_IT(&huart2, (uint8_t*)&user_data, 1);
+
+  portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+}
 /* USER CODE END 4 */
 
 /**
