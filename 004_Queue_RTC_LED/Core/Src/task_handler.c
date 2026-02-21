@@ -33,7 +33,7 @@ static QueueHandle_t input_data_queue;
 // Queue API
 void init_queues(void)
 {
-    print_queue = xQueueCreate(10, sizeof(char));
+    print_queue = xQueueCreate(10, sizeof(size_t));
     configASSERT(print_queue != NULL);
 
     input_data_queue = xQueueCreate(10, sizeof(char));
