@@ -3,10 +3,12 @@
 //
 
 #include "led_effect.h"
+#include "main.h"
 
 // Private global variables
 static TimerHandle_t led_timer_handle;
 static uint8_t led_effect_id;
+static uint8_t flag;
 
 // LED APIs
 void led_init_timer(void)
@@ -22,15 +24,74 @@ void led_effect_stop(void)
 
 void set_led_effect(uint8_t effect)
 {
+    led_effect_id = effect;
+    flag = 0;
+
     if (xTimerIsTimerActive(led_timer_handle) == pdFALSE)
     {
         xTimerStart(led_timer_handle, portMAX_DELAY);
     }
-    led_effect_id = effect;
 }
 
 // LED Timer Callback
 void led_effect_callback(TimerHandle_t xTimer)
 {
+    switch (led_effect_id)
+    {
+    case 1:
+        (flag ^= 1) ? turn_off_all_leds() : turn_on_all_leds();
+        break;
+    case 2:
+        (flag ^= 1) ? turn_on_even_leds() : turn_on_odd_leds();
+        break;
+    case 3:
+        flag = (flag + 1) % 4;
+        led_control( 0x1 << flag);
+        break;
+    case 4:
+        flag = (flag + 1) % 4;
+        led_control( 0x08 >> flag);
+        break;
+    default:
+        break;
+    }
+}
 
+// Helper functions
+void turn_off_all_leds(void)
+{
+    HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin,GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(LD4_GPIO_Port, LD4_Pin,GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(LD5_GPIO_Port, LD5_Pin,GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(LD6_GPIO_Port, LD6_Pin,GPIO_PIN_RESET);
+}
+
+void turn_on_all_leds(void)
+{
+    HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin,GPIO_PIN_SET);
+    HAL_GPIO_WritePin(LD4_GPIO_Port, LD4_Pin,GPIO_PIN_SET);
+    HAL_GPIO_WritePin(LD5_GPIO_Port, LD5_Pin,GPIO_PIN_SET);
+    HAL_GPIO_WritePin(LD6_GPIO_Port, LD6_Pin,GPIO_PIN_SET);
+}
+
+void turn_on_even_leds(void)
+{
+    HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin,GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(LD4_GPIO_Port, LD4_Pin,GPIO_PIN_SET);
+    HAL_GPIO_WritePin(LD5_GPIO_Port, LD5_Pin,GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(LD6_GPIO_Port, LD6_Pin,GPIO_PIN_SET);
+}
+
+void turn_on_odd_leds(void)
+{
+    HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin,GPIO_PIN_SET);
+    HAL_GPIO_WritePin(LD4_GPIO_Port, LD4_Pin,GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(LD5_GPIO_Port, LD5_Pin,GPIO_PIN_SET);
+    HAL_GPIO_WritePin(LD6_GPIO_Port, LD6_Pin,GPIO_PIN_RESET);
+}
+
+void led_control(uint8_t value)
+{
+    for(int i = 0 ; i < 4 ; i++)
+        HAL_GPIO_WritePin(LD3_GPIO_Port, (LD3_Pin << i), ((value >> i)& 0x1));
 }
