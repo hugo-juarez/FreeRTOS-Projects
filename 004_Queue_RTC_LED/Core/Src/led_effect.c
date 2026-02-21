@@ -22,6 +22,10 @@ void led_effect_stop(void)
 
 void set_led_effect(uint8_t effect)
 {
+    if (xTimerIsTimerActive(led_timer_handle) == pdFALSE)
+    {
+        xTimerStart(led_timer_handle, portMAX_DELAY);
+    }
     led_effect_id = effect;
 }
 
