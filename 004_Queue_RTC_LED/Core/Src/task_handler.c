@@ -5,16 +5,27 @@
 #include "task_handler.h"
 
 #include <string.h>
+#include <stdio.h>
 #include "led_effect.h"
+#include "rtc.h"
 
 // Private Helper functions defines
 static int parse_command(void);
+static void show_time_date(void);
 
 // Private global variables
 static State_t curr_state = State_MainMenu;
 static Command_t command;
 static const char* invalid_option = "////Invalid option////\n";
 static UART_HandleTypeDef *huart;
+static char time_buffer[40];
+static char date_buffer[40];
+
+// RTC Cases private functions
+static void rtc_menu_handle(void);
+static void rtc_time_config_handle(void);
+static void rtc_date_config_handle(void);
+static void rtc_report_handle(void);
 
 // Defining task handlers
 static TaskHandle_t menu_task;
@@ -150,9 +161,59 @@ void led_handler(void* params)
 
 void rtc_handler(void* params)
 {
+    const char* msg_rtc1 = "========================\n"
+                            "|         RTC          |\n"
+                            "========================\n";
+
+    const char* msg_rtc2 = "Configure Time            ----> 0\n"
+                            "Configure Date            ----> 1\n"
+                            "Enable reporting          ----> 2\n"
+                            "Exit                      ----> 4\n"
+                            "Enter your choice here : ";
+
+
+    const char *msg_rtc_hh = "Enter hour(1-12):";
+    const char *msg_rtc_mm = "Enter minutes(0-59):";
+    const char *msg_rtc_ss = "Enter seconds(0-59):";
+
+    const char *msg_rtc_dd  = "Enter date(1-31):";
+    const char *msg_rtc_mo  ="Enter month(1-12):";
+    const char *msg_rtc_dow  = "Enter day(1-7 sun:1):";
+    const char *msg_rtc_yr  = "Enter year(0-99):";
+
+    const char *msg_conf = "Configuration successful\n";
+    const char *msg_rtc_report = "Enable time&date reporting(y/n)?: ";
+
     while(1)
     {
         xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
+
+        xQueueSendToBack(print_queue, &msg_rtc1, portMAX_DELAY);
+        show_time_date();
+
+        while (curr_state != State_MainMenu)
+        {
+            // Managing input
+            switch (curr_state)
+            {
+            case State_RtcMenu:
+                xQueueSendToBack(print_queue, &msg_rtc2, portMAX_DELAY);
+                xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
+                rtc_menu_handle();
+                break;
+            case State_RtcTimeConfig:
+
+                break;
+            case State_RtcDateConfig:
+                break;
+            case State_RtcReport:
+                break;
+            default:
+                break;
+            }
+        }
+
+        xTaskNotify(menu_task, 0, eNoAction);
     }
 }
 
@@ -194,6 +255,48 @@ void print_handler(void* params)
     }
 }
 
+// RTC State Hanlders
+static void rtc_menu_handle(void)
+{
+    if (command.len > 1)
+    {
+        xQueueSendToBack(print_queue, &invalid_option, portMAX_DELAY);
+        curr_state = State_MainMenu;
+        return;
+    }
+
+    const uint8_t option = command.payload[0] - 48;
+
+    switch (option)
+    {
+    case 0:
+        curr_state = State_RtcTimeConfig;
+        break;
+    case 1:
+        curr_state = State_RtcDateConfig;
+        break;
+    case 2:
+        curr_state = State_RtcReport;
+        break;
+    default:
+        xQueueSendToBack(print_queue, &invalid_option, portMAX_DELAY);
+        curr_state = State_MainMenu;
+        break;
+    }
+}
+static void rtc_time_config_handle(void)
+{
+
+}
+static void rtc_date_config_handle(void)
+{
+
+}
+static void rtc_report_handle(void)
+{
+
+}
+
 // Private Helper functions
 
 static int parse_command(void)
@@ -211,4 +314,27 @@ static int parse_command(void)
     command.len = i - 1;
 
     return 0;
+}
+
+static void show_time_date(void)
+{
+    RTC_TimeTypeDef time;
+    RTC_DateTypeDef date;
+
+    rtc_get_time(&time);
+    rtc_get_date(&date);
+
+    char *format = (time.TimeFormat == RTC_HOURFORMAT12_AM) ? "AM" : "PM";
+
+    // Helper pointers to pass a pointer of another pointer instead of a pointer to a value.
+    const char* showtime = time_buffer;
+    const char* showdate = date_buffer;
+
+    /* Display time Format : hh:mm:ss [AM/PM] */
+    sprintf((char*)time_buffer,"%s:\t%02d:%02d:%02d [%s]","\nCurrent Time&Date",time.Hours, time.Minutes, time.Seconds,format);
+    xQueueSendToBack(print_queue,&showtime,portMAX_DELAY);
+
+    /* Display date Format : date-month-year */
+    sprintf((char*)date_buffer,"\t%02d-%02d-%2d\n",date.Month, date.Date, 2000 + date.Year);
+    xQueueSendToBack(print_queue,&showdate,portMAX_DELAY);
 }
