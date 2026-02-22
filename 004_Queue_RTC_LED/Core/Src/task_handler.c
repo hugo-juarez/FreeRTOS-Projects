@@ -143,6 +143,7 @@ void rtc_handler(void* params)
 {
     while(1)
     {
+        xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
     }
 }
 
