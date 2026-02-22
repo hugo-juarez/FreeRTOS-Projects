@@ -196,7 +196,7 @@ static int parse_command(void)
     {
         if (xQueueReceive(input_data_queue, &item, portMAX_DELAY) != pdPASS) return -1;
         command.payload[i++] = item;
-    } while (item != '\n' && i < 10);
+    } while (item != '\r' && i < 10);
 
     command.payload[i-1] = '\0';
     command.len = i - 1;

@@ -429,13 +429,13 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   {
     // Queue is not full
     xQueueSendToBackFromISR(queue, &user_data, NULL);
-  } else if (user_data == '\n')
+  } else if (user_data == '\r')
   {
     // Queue is full but last bit received was the end
     xQueueOverwriteFromISR(queue, &user_data, NULL);
   }
 
-  if (user_data == '\n')
+  if (user_data == '\r')
   {
 
     TaskHandle_t command_handle = *get_command_task();
