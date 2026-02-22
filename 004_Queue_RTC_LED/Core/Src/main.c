@@ -25,6 +25,7 @@
 #include "task.h"
 #include "task_handler.h"
 #include "led_effect.h"
+#include "rtc.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -115,6 +116,8 @@ int main(void)
   init_queues();
   led_init_timer();
   set_huart_print(&huart2);
+  status = set_rtc_handler(&hrtc);
+  configASSERT(status == pdPASS);
 
   // Start data reception
   HAL_UART_Receive_IT(&huart2, (uint8_t*)&user_data, 1);
