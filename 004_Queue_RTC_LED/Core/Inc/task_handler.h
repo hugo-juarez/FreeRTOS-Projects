@@ -8,6 +8,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
+#include "stm32f4xx_hal.h"
 
 // Enums
 typedef enum
@@ -45,5 +46,8 @@ void print_handler(void* params);
 void init_queues(void);
 QueueHandle_t get_print_queue(void);
 QueueHandle_t get_input_data_queue(void);
+
+// UART passing function
+void set_huart_print(UART_HandleTypeDef *p_huart);
 
 #endif //INC_004_QUEUE_RTC_LED_TASK_HANDLER_H

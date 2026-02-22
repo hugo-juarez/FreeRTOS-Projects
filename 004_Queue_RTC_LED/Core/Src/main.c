@@ -114,6 +114,7 @@ int main(void)
 
   init_queues();
   led_init_timer();
+  set_huart_print(&huart2);
 
   // Start data reception
   HAL_UART_Receive_IT(&huart2, (uint8_t*)&user_data, 1);
