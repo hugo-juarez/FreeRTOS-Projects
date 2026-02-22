@@ -337,6 +337,9 @@ static void rtc_menu_handle(void)
     case 2:
         curr_state = State_RtcReport;
         break;
+    case 4:
+        curr_state = State_MainMenu;
+        break;
     default:
         xQueueSendToBack(print_queue, &invalid_option, portMAX_DELAY);
         curr_state = State_MainMenu;
