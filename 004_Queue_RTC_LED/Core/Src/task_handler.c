@@ -230,7 +230,10 @@ void rtc_handler(void* params)
                 time.TimeFormat = RTC_HOURFORMAT12_AM;
 
                 rtc_config_time(&time);
+                xQueueSendToBack(print_queue, &msg_conf, portMAX_DELAY);
+                show_time_date();
                 curr_state = State_MainMenu;
+                
                 break;
             case State_RtcDateConfig:
                 int date_value = 0;
@@ -261,7 +264,8 @@ void rtc_handler(void* params)
                 date.Year = date_value;
 
                 rtc_config_date(&date);
-
+                xQueueSendToBack(print_queue, &msg_conf, portMAX_DELAY);
+                show_time_date();
                 curr_state = State_MainMenu;
 
                 break;
