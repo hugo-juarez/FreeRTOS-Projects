@@ -3,7 +3,6 @@
 //
 
 #include "led_effect.h"
-#include "main.h"
 
 // Private global variables
 static TimerHandle_t led_timer_handle;
