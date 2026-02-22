@@ -47,6 +47,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
     ${CMAKE_SOURCE_DIR}/Core/Src/task_handler.c
     ${CMAKE_SOURCE_DIR}/Core/Src/led_effect.c
+    ${CMAKE_SOURCE_DIR}/Core/Src/rtc.c
 )
 
 # Add include paths
