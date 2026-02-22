@@ -25,7 +25,7 @@ static char date_buffer[40];
 // RTC Cases private functions
 static void rtc_menu_handle(void);
 static int rtc_time_config_handle(int is_hour);
-static void rtc_date_config_handle(void);
+static int rtc_date_config_handle(int date_type);
 static void rtc_report_handle(void);
 
 // Defining task handlers
@@ -233,6 +233,37 @@ void rtc_handler(void* params)
                 curr_state = State_MainMenu;
                 break;
             case State_RtcDateConfig:
+                int date_value = 0;
+                RTC_DateTypeDef date = {0};
+
+                xQueueSendToBack(print_queue, &msg_rtc_dd, portMAX_DELAY);
+                xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
+                date_value = rtc_date_config_handle(0);
+                if (date_value == -1) break;
+                date.Date = date_value;
+
+                xQueueSendToBack(print_queue, &msg_rtc_mo, portMAX_DELAY);
+                xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
+                date_value = rtc_date_config_handle(1);
+                if (date_value == -1) break;
+                date.Month = date_value;
+
+                xQueueSendToBack(print_queue, &msg_rtc_dow, portMAX_DELAY);
+                xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
+                date_value = rtc_date_config_handle(2);
+                if (date_value == -1) break;
+                date.WeekDay = date_value;
+
+                xQueueSendToBack(print_queue, &msg_rtc_yr, portMAX_DELAY);
+                xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
+                date_value = rtc_date_config_handle(3);
+                if (date_value == -1) break;
+                date.Year = date_value;
+
+                rtc_config_date(&date);
+
+                curr_state = State_MainMenu;
+
                 break;
             case State_RtcReport:
                 break;
@@ -337,8 +368,39 @@ static int rtc_time_config_handle(int is_hour)
     return val;
 
 }
-static void rtc_date_config_handle(void)
+static int rtc_date_config_handle(int date_type)
 {
+    /* Date type is
+     * 0: day
+     * 1: month
+     * 2: day of week
+     * 3: year
+     */
+
+     if( command.len > 2 || (date_type == 2 && command.len > 1))
+     {
+         xQueueSendToBack(print_queue, &invalid_option, portMAX_DELAY);
+         curr_state = State_MainMenu;
+         return -1;
+     }
+
+    // Value
+    int val = atoi((char *)command.payload);
+
+    // Checks for day/month/day of week/year
+    const int day_check = date_type == 0 && ( val < 1 || val > 31);
+    const int month_check = date_type == 1 && ( val < 1 || val > 12);
+    const int dow_check = date_type == 2 && ( val < 1 || val > 7);
+    const int year_check = date_type == 3 && ( val < 0 || val > 99);
+
+    if (day_check || month_check || dow_check || year_check)
+    {
+        xQueueSendToBack(print_queue, &invalid_option, portMAX_DELAY);
+        curr_state = State_MainMenu;
+        return -1;
+    }
+
+    return val;
 
 }
 static void rtc_report_handle(void)
