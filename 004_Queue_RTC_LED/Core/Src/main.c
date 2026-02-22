@@ -24,6 +24,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "task_handler.h"
+#include "led_effect.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -112,6 +113,7 @@ int main(void)
   configASSERT(status == pdPASS);
 
   init_queues();
+  led_init_timer();
 
   // Start data reception
   HAL_UART_Receive_IT(&huart2, (uint8_t*)&user_data, 1);
