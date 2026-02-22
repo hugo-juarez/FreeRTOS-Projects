@@ -19,6 +19,7 @@ void led_init_timer(void)
 
 void led_effect_stop(void)
 {
+    turn_off_all_leds();
     xTimerStop(led_timer_handle, portMAX_DELAY);
 }
 
