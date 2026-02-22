@@ -8,7 +8,7 @@
 #include "main.h"
 
 // Private Helper functions defines
-static void parse_command(void);
+static int parse_command(void);
 
 // Private global variables
 static State_t curr_state = State_MainMenu;
@@ -154,9 +154,7 @@ void command_handler(void* params)
     {
         if ( xTaskNotifyWait(0, 0, NULL, portMAX_DELAY) != pdTRUE) continue;
 
-        if ( xQueueReceive(input_data_queue, &command.payload, 0) != pdPASS) continue;
-
-        parse_command();
+        if ( parse_command() == -1) continue;
 
         switch (curr_state)
         {
@@ -189,18 +187,19 @@ void print_handler(void* params)
 
 // Private Helper functions
 
-static void parse_command(void)
+static int parse_command(void)
 {
-    int i;
-    for (i = 0; i < 10; i ++)
+    uint8_t item;
+    uint8_t i = 0;
+
+    do
     {
+        if (xQueueReceive(input_data_queue, &item, portMAX_DELAY) != pdPASS) return -1;
+        command.payload[i++] = item;
+    } while (item != '\n' && i < 10);
 
-        if ( command.payload[i] == '\n')
-        {
-            break;
-        }
-    }
+    command.payload[i-1] = '\0';
+    command.len = i - 1;
 
-    command.len = --i;
-    command.payload[i] = '\0';
+    return 0;
 }
