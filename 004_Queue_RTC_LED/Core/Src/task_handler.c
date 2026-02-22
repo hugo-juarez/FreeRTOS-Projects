@@ -6,6 +6,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "led_effect.h"
 #include "rtc.h"
 
@@ -23,7 +24,7 @@ static char date_buffer[40];
 
 // RTC Cases private functions
 static void rtc_menu_handle(void);
-static void rtc_time_config_handle(void);
+static int rtc_time_config_handle(int is_hour);
 static void rtc_date_config_handle(void);
 static void rtc_report_handle(void);
 
@@ -202,7 +203,34 @@ void rtc_handler(void* params)
                 rtc_menu_handle();
                 break;
             case State_RtcTimeConfig:
+                int value = 0;
+                RTC_TimeTypeDef time = {0};
 
+                // Getting hour
+                xQueueSendToBack(print_queue, &msg_rtc_hh, portMAX_DELAY);
+                xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
+                value = rtc_time_config_handle(1);
+                if (value == -1) break;
+                time.Hours = value;
+
+                // Getting minutes
+                xQueueSendToBack(print_queue, &msg_rtc_mm, portMAX_DELAY);
+                xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
+                value = rtc_time_config_handle(0);
+                if (value == -1) break;
+                time.Minutes = value;
+
+                // Getting seconds
+                xQueueSendToBack(print_queue, &msg_rtc_ss, portMAX_DELAY);
+                xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
+                value = rtc_time_config_handle(0);
+                if (value == -1) break;
+                time.Seconds = value;
+
+                time.TimeFormat = RTC_HOURFORMAT12_AM;
+
+                rtc_config_time(&time);
+                curr_state = State_MainMenu;
                 break;
             case State_RtcDateConfig:
                 break;
@@ -284,8 +312,29 @@ static void rtc_menu_handle(void)
         break;
     }
 }
-static void rtc_time_config_handle(void)
+static int rtc_time_config_handle(int is_hour)
 {
+    if (command.len > 2)
+    {
+        xQueueSendToBack(print_queue, &invalid_option, portMAX_DELAY);
+        curr_state = State_MainMenu;
+        return -1;
+    }
+
+    // Convert to number
+    int val = atoi((char *)command.payload);
+
+    int hour_check = is_hour && (val < 1 || val > 12);
+    int min_sec_check = val < 0 || val > 59;
+
+    if ( hour_check || min_sec_check )
+    {
+        xQueueSendToBack(print_queue, &invalid_option, portMAX_DELAY);
+        curr_state = State_MainMenu;
+        return -1;
+    }
+
+    return val;
 
 }
 static void rtc_date_config_handle(void)
