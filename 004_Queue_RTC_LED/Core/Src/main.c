@@ -115,7 +115,9 @@ int main(void)
 
   init_queues();
   led_init_timer();
-  set_huart_print(&huart2);
+  status = set_huart_print(&huart2);
+  configASSERT(status == pdPASS);
+
   status = set_rtc_handler(&hrtc);
   configASSERT(status == pdPASS);
 

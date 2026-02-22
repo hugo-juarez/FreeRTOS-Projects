@@ -48,10 +48,11 @@ QueueHandle_t get_print_queue(void) { return print_queue; }
 QueueHandle_t get_input_data_queue(void) { return input_data_queue; }
 
 // Print Task UART passing
-void set_huart_print(UART_HandleTypeDef *p_huart)
+int set_huart_print(UART_HandleTypeDef *p_huart)
 {
+    if (p_huart == NULL) return 0;
     huart = p_huart;
-    configASSERT(huart != NULL);
+    return 1;
 }
 
 // Task Handlers

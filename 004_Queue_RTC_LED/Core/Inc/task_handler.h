@@ -48,6 +48,6 @@ QueueHandle_t get_print_queue(void);
 QueueHandle_t get_input_data_queue(void);
 
 // UART passing function
-void set_huart_print(UART_HandleTypeDef *p_huart);
+int set_huart_print(UART_HandleTypeDef *p_huart);
 
 #endif //INC_004_QUEUE_RTC_LED_TASK_HANDLER_H
