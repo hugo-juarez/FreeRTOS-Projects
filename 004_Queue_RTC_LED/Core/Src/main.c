@@ -434,7 +434,9 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   } else if (user_data == '\r')
   {
     // Queue is full but last bit received was the end
-    xQueueOverwriteFromISR(queue, &user_data, NULL);
+    uint8_t dummy;
+    xQueueReceiveFromISR(queue, &dummy, NULL);
+    xQueueSendToBackFromISR(queue, &user_data, NULL);
   }
 
   if (user_data == '\r')
