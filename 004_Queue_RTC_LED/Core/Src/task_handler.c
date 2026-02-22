@@ -81,11 +81,12 @@ void menu_handler(void* params)
                 break;
             default:
                 xQueueSendToBack(print_queue, &invalid_option, portMAX_DELAY);
-                break;
+                continue;
             }
         } else
         {
             xQueueSendToBack(print_queue, &invalid_option, portMAX_DELAY);
+            continue;
         }
 
         xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
