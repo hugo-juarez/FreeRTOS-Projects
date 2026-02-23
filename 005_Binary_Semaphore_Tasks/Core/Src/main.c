@@ -21,7 +21,11 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
+#include "semphr.h"
+#include <stdlib.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -42,14 +46,19 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+TaskHandle_t manager_handle;
+TaskHandle_t employee_handle;
+QueueHandle_t ticket_queue;
+SemaphoreHandle_t ticket_semaphore;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 /* USER CODE BEGIN PFP */
-
+extern void SEGGER_UART_init(U32);
+static void manager_handler(void* params);
+static void employee_handler(void* params);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -87,6 +96,29 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
+  // Enabling UART with SEGGER
+  SEGGER_UART_init(250000);
+  DWT->CTRL |= ( 1 << 0);
+  SEGGER_SYSVIEW_Conf();
+
+  //Task creation
+  BaseType_t status;
+
+  status = xTaskCreate(manager_handler, "Manager", 120, NULL, 3, &manager_handle);
+  configASSERT(status == pdPASS);
+
+  status = xTaskCreate(employee_handler, "Employee", 120, NULL, 2, &employee_handle);
+  configASSERT(status == pdPASS);
+
+  // Queue creation
+  ticket_queue = xQueueCreate(5, sizeof(uint32_t));
+  configASSERT(ticket_queue != NULL);
+
+  ticket_semaphore = xSemaphoreCreateBinary();
+  configASSERT(ticket_semaphore != NULL);
+
+  // Initialize Scheduler
+  vTaskStartScheduler();
 
   /* USER CODE END 2 */
 
@@ -292,7 +324,52 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+static void manager_handler(void* params)
+{
+  uint32_t ticket;
 
+  /* Since the semaphore was created in the empty state, the semaphore must first
+     give before it can take */
+  xSemaphoreGive(ticket_semaphore);
+
+  while (1)
+  {
+    ticket = rand();
+    BaseType_t status = xQueueSendToBack(ticket_queue, &ticket, portMAX_DELAY);
+
+    if (status != pdPASS)
+    {
+      SEGGER_SYSVIEW_PrintfTarget("Could not send to the queue\n");
+    } else
+    {
+      // Notify employee tasks
+      xSemaphoreGive(ticket_semaphore);
+      taskYIELD();
+    }
+  }
+}
+
+static void employee_handler(void* params)
+{
+  uint32_t ticket;
+
+  while (1)
+  {
+    // First try to take semaphore
+    xSemaphoreTake(ticket_semaphore, portMAX_DELAY);
+
+    BaseType_t status = xQueueReceive(ticket_queue, &ticket, 0);
+    if (status != pdPASS)
+    {
+      SEGGER_SYSVIEW_PrintfTarget("Queue is empty nothign to do\n");
+    } else
+    {
+      SEGGER_SYSVIEW_PrintfTarget("Working on ticket: %lu\n", ticket);
+    }
+
+    // Process ticket
+  }
+}
 /* USER CODE END 4 */
 
 /**
