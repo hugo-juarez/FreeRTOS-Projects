@@ -345,10 +345,11 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 static void print_handler(void *param)
 {
-  char *buffer = param;
+  static char buffer[60];
 
   while (1)
   {
+    sprintf(buffer, "%s", param);
     printmsg(buffer);
     vTaskDelay( rand() & 0XF );
   }
@@ -357,7 +358,13 @@ static void print_handler(void *param)
 
 static void printmsg(char *msg)
 {
-  HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
+  for(uint32_t i=0; i < strlen(msg); i++)
+  {
+    while ( (USART2->SR & USART_SR_TXE) == (uint16_t)RESET);
+   USART2->DR = msg[i] & (uint16_t) 0x01FF;
+  }
+
+  while ( (USART2->SR & USART_SR_TC) == (uint16_t)RESET);
 }
 /* USER CODE END 4 */
 
