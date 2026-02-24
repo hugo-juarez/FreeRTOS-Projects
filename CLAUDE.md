@@ -9,14 +9,18 @@ STM32F407VGT6 (Cortex-M4F, 168 MHz) FreeRTOS learning project with SEGGER System
 ## Build Commands
 
 ```bash
-# Build a project (from its directory, e.g. 001_Tasks/)
+# FreeRTOS submodule init (required before first build)
+git submodule update --init --recursive
+
+# Build a project using CMakePresets.json (preferred, from the project directory)
+cmake --preset Debug      # configures into build/Debug/
+cmake --build --preset Debug
+
+# Alternative: explicit toolchain (no presets)
 cmake -B build -DCMAKE_TOOLCHAIN_FILE=cmake/gcc-arm-none-eabi.cmake
 cmake --build build
 
 # For STM32CubeIDE: use project dir as source, project/build-cubeide as build dir
-
-# FreeRTOS submodule init (required before first build)
-git submodule update --init --recursive
 ```
 
 ## Architecture
@@ -28,8 +32,10 @@ FreeRTOS/
 │   ├── Core/Inc/        # FreeRTOSConfig.h, main.h, HAL config
 │   ├── Core/Src/        # main.c, syscalls.c, interrupts
 │   ├── Drivers/         # STM32 HAL + CMSIS (per-project copy)
-│   ├── cmake/stm32cubemx/  # CubeMX-generated cmake (HAL sources, flags)
-│   ├── cmake/gcc-arm-none-eabi.cmake  # Cross-compiler toolchain
+│   ├── cmake/stm32cubemx/        # CubeMX-generated cmake (HAL sources, flags)
+│   ├── cmake/gcc-arm-none-eabi.cmake  # GCC cross-compiler toolchain
+│   ├── cmake/starm-clang.cmake        # Clang cross-compiler toolchain (alternative)
+│   ├── CMakePresets.json              # Debug/Release presets (Ninja generator)
 │   ├── STM32F407XX_FLASH.ld           # Linker script
 │   └── startup_stm32f407xx.s          # Startup assembly
 ├── cmake/
@@ -67,6 +73,37 @@ add_freertos_segger_library(${CMAKE_PROJECT_NAME} ${CMAKE_SOURCE_DIR}/Core/Inc)
 2. Memory dump from that address for that length via IDE memory browser
 3. Save as raw binary with `.SVdat` extension
 4. Open in SEGGER SystemView: File > Load Data
+
+### SEGGER SystemView UART recording (real-time streaming)
+
+An alternative to single-shot that streams data live over USART2 (PA2/TX, PA3/RX).
+
+In `CMakeLists.txt`, set before including `segger.cmake`:
+```cmake
+set(SEGGER_UART_REC 1)
+include(${CMAKE_SOURCE_DIR}/../cmake/segger.cmake)
+add_freertos_segger_library(...)
+```
+
+In `main.c`, replace `SEGGER_SYSVIEW_Start()` with:
+```c
+extern void SEGGER_UART_init(U32 baud);
+SEGGER_UART_init(500000);
+SEGGER_SYSVIEW_Conf();
+// Do NOT call SEGGER_SYSVIEW_Start() — the host triggers it
+```
+
+Connect a USB-UART adapter to PA2/PA3, then in SystemView: Target > Recorder Configuration > UART, set baud rate, click Start Recording.
+
+Notes:
+- UART IRQ runs at priority 6, which is intentionally below `configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY` (5)
+- `ThirdParty/SEGGER/Rec/segger_uart.c` is STM32F407-specific (USART2 on APB1 at 42 MHz); modify for other MCUs
+- Single-shot and UART recording are mutually exclusive
+
+### SEGGER configuration files
+
+- `ThirdParty/SEGGER/Config/SEGGER_SYSVIEW_ConfDefault.h` — RTT buffer size, MCU core
+- `ThirdParty/SEGGER/Sample/FreeRTOSV10/Config/SEGGER_SYSVIEW_Config_FreeRTOS.c` — app name (`SYSVIEW_APP_NAME`) and device string (`SYSVIEW_DEVICE_NAME`)
 
 ### Key SEGGER init requirements in main.c
 
