@@ -23,7 +23,10 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "FreeRTOS.h"
+#include "task.h"
+#include <stdio.h>
+#include <stdlib.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -45,7 +48,8 @@
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-
+TaskHandle_t xTask1;
+TaskHandle_t xTask2;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -53,6 +57,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
+static void print_handler(void * param);
 static void printmsg(char *msg);
 /* USER CODE END PFP */
 
@@ -93,6 +98,15 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
+  BaseType_t status;
+
+  status = xTaskCreate(print_handler, "Print1", 200, "Task 1 ******************************************\r\n", 1, NULL);
+  configASSERT(status);
+
+  status = xTaskCreate(print_handler, "Print2", 200, "Task 2 ------------------------------------------\r\n", 2, NULL);
+  configASSERT(status);
+
+  vTaskStartScheduler();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -329,6 +343,18 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+static void print_handler(void *param)
+{
+  char *buffer = param;
+
+  while (1)
+  {
+    printmsg(buffer);
+    vTaskDelay( rand() & 0XF );
+  }
+
+}
+
 static void printmsg(char *msg)
 {
   HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
