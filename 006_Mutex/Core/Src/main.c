@@ -19,14 +19,14 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
-#include <string.h>
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "FreeRTOS.h"
 #include "task.h"
+#include "semphr.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,6 +50,7 @@ UART_HandleTypeDef huart2;
 /* USER CODE BEGIN PV */
 TaskHandle_t xTask1;
 TaskHandle_t xTask2;
+SemaphoreHandle_t xMutex;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -99,6 +100,9 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   BaseType_t status;
+
+  xMutex = xSemaphoreCreateMutex();
+  configASSERT(xMutex != NULL);
 
   status = xTaskCreate(print_handler, "Print1", 200, "Task 1 ******************************************\r\n", 1, NULL);
   configASSERT(status);
@@ -349,8 +353,10 @@ static void print_handler(void *param)
 
   while (1)
   {
+    xSemaphoreTake(xMutex, portMAX_DELAY);
     sprintf(buffer, "%s", param);
     printmsg(buffer);
+    xSemaphoreGive(xMutex);
     vTaskDelay( rand() & 0XF );
   }
 
